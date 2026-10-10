@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoVision AI | Smart Waste Classification</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+
+    <div id="loadingOverlay" class="loading-overlay" hidden>
+        <div class="loading-card">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <p id="loadingText">Loading…</p>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <a href="#home" class="logo">
+            <span class="logo-icon" aria-hidden="true">✳</span>
+            <span>EcoVision<span class="logo-ai"> AI</span></span>
+        </a>
+
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#scanner">Scanner</a>
+            <a href="#analytics">Analytics</a>
+            <a href="#challenge">Challenge</a>
+            <a href="#recycling">Recycling</a>
+            <a href="#about">About</a>
+        </div>
+
+        <a href="#scanner" class="nav-button">Try AI Scanner</a>
+    </nav>
+
+    <main>
+
+        <section class="hero" id="home">
+            <div class="hero-content">
+                <div class="badge">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    AI / ML EXPO PROJECT
+                </div>
+
+                <h1>EcoVision <span>AI</span></h1>
+
+                <p class="hero-description">
+                    Upload waste images and classify them with a Teachable Machine model into Plastic, Paper, Metal, or Organic — then get EcoDecision guidance for responsible disposal.
+                </p>
+
+                <div class="hero-actions">
+                    <a href="#scanner" class="primary-button">Start Scanning <span aria-hidden="true">→</span></a>
+                    <a href="#analytics" class="secondary-button">View Analytics</a>
+                </div>
+
+                <p class="hero-note">
+                    Predictions run in your browser. Confidence scores are model probabilities, not guarantees.
+                </p>
+            </div>
+
+            <div class="hero-visual" aria-hidden="true">
+                <div class="visual-glow"></div>
+                <div class="eco-card">
+                    <div class="eco-card-top">
+                        <span class="live-indicator"></span> CLASSIFICATION PIPELINE
+                    </div>
+                    <div class="eco-illustration">♻</div>
+                    <div class="eco-card-bottom">
+                        <div>
+                            <span class="small-label">MODEL CLASSES</span>
+                            <h3>Plastic · Paper<br>Metal · Organic</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-section" aria-label="Project highlights">
+            <div class="stat-item">
+                <span class="stat-icon">◎</span>
+                <div>
+                    <h3>On-device AI</h3>
+                    <p>TensorFlow.js + Teachable Machine</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">♻</span>
+                <div>
+                    <h3>EcoDecision</h3>
+                    <p>Disposal &amp; reuse guidance</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">▣</span>
+                <div>
+                    <h3>Analytics</h3>
+                    <p>From your real scan history</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">✦</span>
+                <div>
+                    <h3>EcoChallenge</h3>
+                    <p>Learn waste sorting</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Scanner -->
+        <section class="scanner-section" id="scanner">
+            <div class="section-heading">
+                <span class="section-tag">AI SCANNER</span>
+                <h2>Classify waste. <span>Act with EcoDecision.</span></h2>
+                <p>Upload up to 4 images. The model predicts a category; EcoDecision then shows transparent, category-based guidance.</p>
+            </div>
+
+            <div class="scanner-layout">
+                <div class="upload-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <span class="panel-number">01 / UPLOAD</span>
+                            <h3>Upload images</h3>
+                        </div>
+                        <span class="panel-icon" aria-hidden="true">↥</span>
+                    </div>
+
+                    <label for="imageInput" class="upload-area" id="uploadArea">
+                        <div class="upload-icon" aria-hidden="true">↑</div>
+                        <h4>Drop images here</h4>
+                        <p>or click to browse · max 4 files · under 5 MB each</p>
+                        <span class="file-format">JPG · JPEG · PNG · WEBP</span>
+                        <div id="imageGallery" class="image-gallery"></div>
+                    </label>
+
+                    <input type="file" id="imageInput" accept="image/jpeg,image/png,image/webp" multiple hidden>
+
+                    <button id="analyzeBtn" class="primary-button analyze-button" disabled>
+                        Analyze with AI <span aria-hidden="true">→</span>
+                    </button>
+
+                    <p class="privacy-note">Images are processed in your browser when the local model loads. Nothing is uploaded to a custom server.</p>
+                </div>
+
+                <div class="results-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <span class="panel-number">02 / RESULTS</span>
+                            <h3>Classification &amp; EcoDecision</h3>
+                        </div>
+                        <span class="result-status" id="resultStatus">READY</span>
+                    </div>
+
+                    <div class="empty-results" id="emptyResults">
+                        <div class="empty-icon" aria-hidden="true">⌕</div>
+                        <h4>Waiting for your image</h4>
+                        <p>Predictions, confidence, alternatives, and EcoDecision guidance will appear here after analysis.</p>
+                    </div>
+
+                    <div id="multiResults" class="multi-results"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Waste Analytics Dashboard -->
+        <section class="analytics-section" id="analytics">
+            <div class="section-heading">
+                <span class="section-tag">WASTE ANALYTICS</span>
+                <h2>Dashboard from <span>your scans</span></h2>
+                <p>All figures are calculated from completed scans stored in this browser. Empty until you run the scanner.</p>
+            </div>
+
+            <div class="analytics-grid">
+                <article class="metric-card">
+                    <span class="metric-label">Total completed scans</span>
+                    <p class="metric-value" id="totalScans">0</p>
+                </article>
+                <article class="metric-card">
+                    <span class="metric-label">Most frequent category</span>
+                    <p class="metric-value metric-value-sm" id="topCategory">—</p>
+                </article>
+                <article class="metric-card metric-wide">
+                    <span class="metric-label">Category-wise counts</span>
+                    <div id="categoryCounts" class="category-counts"></div>
+                </article>
+            </div>
+
+            <div class="chart-panel">
+                <div class="panel-heading">
+                    <div>
+                        <span class="panel-number">BAR CHART</span>
+                        <h3>Scans by category</h3>
+                    </div>
+                </div>
+                <p id="analyticsEmpty" class="analytics-empty">No scans yet — run the AI Scanner to populate this chart.</p>
+                <div id="categoryBars" class="category-bars" aria-label="Category bar chart"></div>
+            </div>
+        </section>
+
+        <!-- History -->
+        <section class="history-section" id="history">
+            <div class="history-heading">
+                <div>
+                    <span class="section-tag">YOUR ACTIVITY</span>
+                    <h2>Recent <span>scans</span></h2>
+                </div>
+                <button id="clearHistoryBtn" type="button" class="text-button">Clear history</button>
+            </div>
+            <div id="historyList" class="history-list">
+                <div class="history-empty">Your completed scans will appear here.</div>
+            </div>
+        </section>
+
+        <!-- EcoChallenge -->
+        <section class="challenge-section" id="challenge">
+            <div class="section-heading">
+                <span class="section-tag">ECOCHALLENGE</span>
+                <h2>Waste-sorting <span>quiz</span></h2>
+                <p>Test sorting knowledge with scored multiple-choice questions. Results are saved in this browser.</p>
+            </div>
+
+            <div class="challenge-layout">
+                <div class="quiz-panel">
+                    <div class="quiz-meta">
+                        <span id="quizProgress">Ready when you are</span>
+                        <span id="quizScore">Score: 0</span>
+                    </div>
+                    <h3 id="quizQuestion">Press Start to begin the EcoChallenge.</h3>
+                    <div id="quizOptions" class="quiz-options"></div>
+                    <p id="quizFeedback" class="quiz-feedback"></p>
+                    <div class="quiz-actions">
+                        <button id="startQuizBtn" type="button" class="primary-button">Start challenge</button>
+                        <button id="nextQuizBtn" type="button" class="secondary-button" hidden>Next question</button>
+                    </div>
+                </div>
+
+                <div class="quiz-side">
+                    <h3>Completed challenges</h3>
+                    <div id="quizCompletedList" class="quiz-completed-list"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recycling support -->
+        <section class="recycling-section" id="recycling">
+            <div class="section-heading">
+                <span class="section-tag">RECYCLING SUPPORT</span>
+                <h2>Find local <span>options</span></h2>
+                <p>No verified facility database is bundled with this project. Use the search below for general next steps — facility names are never invented.</p>
+            </div>
+
+            <div class="recycling-panel">
+                <label class="field-label" for="recyclingSearch">City, postcode, or area</label>
+                <div class="recycling-search-row">
+                    <input type="search" id="recyclingSearch" placeholder="e.g. your city name" autocomplete="off">
+                    <button id="recyclingSearchBtn" type="button" class="primary-button">Search guidance</button>
+                </div>
+                <div id="recyclingResults" class="recycling-results"></div>
+            </div>
+        </section>
+
+        <!-- How it works / about -->
+        <section class="how-section" id="about">
+            <div class="section-heading">
+                <span class="section-tag">HOW IT WORKS</span>
+                <h2>Three steps. <span>Clearer choices.</span></h2>
+                <p>Image classification plus transparent EcoDecision rules — built for an AI/ML student expo.</p>
+            </div>
+
+            <div class="steps-grid">
+                <article class="step-card">
+                    <span class="step-number">01</span>
+                    <div class="step-icon" aria-hidden="true">📷</div>
+                    <h3>Upload</h3>
+                    <p>Select clear photos of waste items (up to four at once).</p>
+                </article>
+                <article class="step-card">
+                    <span class="step-number">02</span>
+                    <div class="step-icon" aria-hidden="true">🧠</div>
+                    <h3>Model prediction</h3>
+                    <p>A Teachable Machine image model scores Plastic, Paper, Metal, and Organic with confidence values.</p>
+                </article>
+                <article class="step-card">
+                    <span class="step-number">03</span>
+                    <div class="step-icon" aria-hidden="true">🌱</div>
+                    <h3>EcoDecision</h3>
+                    <p>Rule-based disposal, preparation, reuse, and recycling notes — with a reminder that local rules vary.</p>
+                </article>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <a href="#home" class="logo footer-logo">
+            <span class="logo-icon" aria-hidden="true">✳</span>
+            <span>EcoVision<span class="logo-ai"> AI</span></span>
+        </a>
+        <p>Educational AI/ML project — model confidence is not certified accuracy.</p>
+        <span class="footer-note">AI PROJECT EXPO 2026</span>
+    </footer>
+
+</body>
+
+</html>
